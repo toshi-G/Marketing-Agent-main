@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Workflow {
+  id          String   @id @default(uuid())
+  name        String
+  status      String   @default("pending") // pending, running, completed, failed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  completedAt DateTime?
+  
+  agents      Agent[]
+  results     WorkflowResult[]
+}
+
+model Agent {
+  id          String   @id @default(uuid())
+  workflowId  String
+  type        String   // market_research, content_scraping, etc.
+  status      String   @default("pending") // pending, running, completed, failed
+  input       String?  // JSON string
+  output      String?  // JSON string
+  error       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  completedAt DateTime?
+  
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+}
+
+model WorkflowResult {
+  id          String   @id @default(uuid())
+  workflowId  String
+  type        String   // template, content, metrics, etc.
+  data        String   // JSON string
+  createdAt   DateTime @default(now())
+  
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+}
+
+model Template {
+  id          String   @id @default(uuid())
+  name        String
+  category    String   // landing_page, email, sns_post, etc.
+  type        String   // aggressive, empathy, contrarian, etc.
+  content     String   // JSON string
+  performance String?  // JSON string with metrics
+  tags        String?  // JSON array string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MarketData {
+  id          String   @id @default(uuid())
+  genre       String
+  trendScore  Float
+  profitability Float
+  competition String
+  marketSize  String
+  data        String   // JSON string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Content {
+  id          String   @id @default(uuid())
+  type        String   // landing_page, email, sns_post, etc.
+  platform    String?  // twitter, instagram, etc.
+  title       String?
+  content     String   // JSON or HTML string
+  performance String?  // JSON string with metrics
+  tags        String?  // JSON array string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
