@@ -33,9 +33,13 @@ npm install
 cp .env.example .env
 ```
 
-`.env`ファイルを編集し、Gemini APIキーを設定してください：
-```
+`.env`ファイルを編集し、必要な環境変数を設定してください：
+```bash
+# 必須: Google Gemini APIキー（https://makersuite.google.com/app/apikey から取得）
 GEMINI_API_KEY=your_gemini_api_key_here
+
+# 必須: データベース接続URL（開発環境ではデフォルトで設定済み）
+DATABASE_URL="file:./prisma/dev.db"
 ```
 
 3. **データベースのセットアップ**
@@ -49,7 +53,13 @@ npm run prisma:migrate
 npm run dev
 ```
 
-http://localhost:3000 でアプリケーションにアクセスできます。
+5. **動作確認**
+- http://localhost:3000 でアプリケーションにアクセス
+- http://localhost:3000/api/health でシステム状態を確認
+
+ヘルスチェックで以下の項目が `connected` になっていることを確認してください：
+- データベース接続
+- Gemini API接続
 
 ## 使い方
 

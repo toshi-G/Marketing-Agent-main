@@ -84,9 +84,13 @@ export abstract class BaseAgent {
   ): Promise<string> {
     let lastError: Error | null = null;
     
+    console.log(`🔄 ${this.type} エージェント開始: Gemini API呼び出し (最大${API_CONFIG.AGENT_RETRY_COUNT}回試行)`);
+    
     for (let i = 0; i < API_CONFIG.AGENT_RETRY_COUNT; i++) {
       try {
-        const response = await client.sendMessage({
+        console.log(`📡 試行 ${i + 1}/${API_CONFIG.AGENT_RETRY_COUNT}: ${this.type}`);
+        
+        const request = {
           contents: [
             { role: 'user', parts: [{ text: userMessage }] }
           ],
@@ -94,38 +98,77 @@ export abstract class BaseAgent {
             maxOutputTokens: API_CONFIG.GEMINI_MAX_TOKENS,
             temperature: API_CONFIG.GEMINI_TEMPERATURE
           },
-          systemInstruction: this.systemPrompt
-        });
+          systemInstruction: {
+            parts: [{ text: this.systemPrompt }]
+          }
+        };
 
-        return response.candidates[0].content.parts[0].text;
+        const response = await client.sendMessage(request);
+
+        // レスポンス構造の検証
+        if (!response.candidates?.[0]?.content?.parts?.[0]?.text) {
+          throw new Error('Invalid response structure from Gemini API');
+        }
+
+        const responseText = response.candidates[0].content.parts[0].text;
+        console.log(`✅ ${this.type} 成功: レスポンス長 ${responseText.length}文字`);
+        
+        return responseText;
         
       } catch (error) {
         lastError = error as Error;
+        console.error(`❌ ${this.type} 試行 ${i + 1} 失敗:`, error instanceof Error ? error.message : error);
+        
         if (i < API_CONFIG.AGENT_RETRY_COUNT - 1) {
+          console.log(`⏳ ${API_CONFIG.AGENT_RETRY_DELAY/1000}秒待機後、再試行...`);
           await delay(API_CONFIG.AGENT_RETRY_DELAY);
         }
       }
     }
     
-    throw lastError || new Error('Failed to call Gemini API');
+    console.error(`💥 ${this.type} 全試行失敗`);
+    throw lastError || new Error('Failed to call Gemini API after all retries');
   }
   
   protected extractJson(text: string): any {
-    // JSON部分を抽出
-    const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
-    if (jsonMatch) {
-      try {
-        return JSON.parse(jsonMatch[1]);
-      } catch (error) {
-        throw new Error(`Failed to parse JSON: ${error}`);
+    console.log(`🔍 ${this.type} JSON抽出開始: レスポンス長 ${text.length}文字`);
+    
+    // 複数のJSONパターンを試行
+    const patterns = [
+      // Markdown形式のJSON
+      /```json\s*([\s\S]*?)\s*```/,
+      // プレーンJSONブロック
+      /```\s*([\s\S]*?)\s*```/,
+      // 中括弧で囲まれたJSON（最大のブロック）
+      /(\{[\s\S]*\})/,
+      // 角括弧で囲まれたJSON配列
+      /(\[[\s\S]*\])/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) {
+        try {
+          const jsonStr = match[1].trim();
+          const parsed = JSON.parse(jsonStr);
+          console.log(`✅ ${this.type} JSON解析成功: パターン ${patterns.indexOf(pattern) + 1}`);
+          return parsed;
+        } catch (error) {
+          console.log(`❌ ${this.type} JSON解析失敗: パターン ${patterns.indexOf(pattern) + 1} - ${error}`);
+          continue;
+        }
       }
     }
     
-    // 直接JSONとして解析を試みる
+    // 直接全文を解析
     try {
-      return JSON.parse(text);
-    } catch {
-      throw new Error('No valid JSON found in response');
+      const parsed = JSON.parse(text.trim());
+      console.log(`✅ ${this.type} 直接JSON解析成功`);
+      return parsed;
+    } catch (error) {
+      console.error(`❌ ${this.type} 全JSONパターン失敗`);
+      console.error('応答テキスト（最初の500文字）:', text.substring(0, 500));
+      throw new Error(`Failed to extract JSON from response: ${error}. Text preview: ${text.substring(0, 200)}...`);
     }
   }
 }

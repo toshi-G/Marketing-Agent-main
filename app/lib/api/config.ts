@@ -3,9 +3,9 @@
 export const API_CONFIG = {
   // Gemini API設定
   GEMINI_API_URL:
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
-  GEMINI_MODEL: 'gemini-pro',
-  GEMINI_MAX_TOKENS: 4000,
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+  GEMINI_MODEL: 'gemini-1.5-flash',
+  GEMINI_MAX_TOKENS: 8000,
   GEMINI_TEMPERATURE: 0.7,
   
   // エージェント設定
