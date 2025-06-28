@@ -1,25 +1,27 @@
 // API設定
 
+import { getEnvVar } from '../utils/env'
+
 export const API_CONFIG = {
   // Gemini API設定
   GEMINI_API_URL:
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
   GEMINI_MODEL: 'gemini-1.5-flash',
-  GEMINI_MAX_TOKENS: 8000,
-  GEMINI_TEMPERATURE: 0.7,
+  get GEMINI_MAX_TOKENS() { return getEnvVar('GEMINI_MAX_TOKENS') },
+  get GEMINI_TEMPERATURE() { return getEnvVar('GEMINI_TEMPERATURE') },
   
   // エージェント設定
-  AGENT_TIMEOUT: 300000, // 5分
-  AGENT_RETRY_COUNT: 3,
-  AGENT_RETRY_DELAY: 5000, // 5秒
+  get AGENT_TIMEOUT() { return getEnvVar('AGENT_TIMEOUT') },
+  get AGENT_RETRY_COUNT() { return getEnvVar('AGENT_RETRY_COUNT') },
+  get AGENT_RETRY_DELAY() { return getEnvVar('AGENT_RETRY_DELAY') },
   
   // ワークフロー設定
   WORKFLOW_MAX_DURATION: 1800000, // 30分
   WORKFLOW_CHECK_INTERVAL: 10000, // 10秒
   
   // レート制限
-  RATE_LIMIT_REQUESTS_PER_MINUTE: 10,
-  RATE_LIMIT_TOKENS_PER_MINUTE: 50000,
+  get RATE_LIMIT_REQUESTS_PER_MINUTE() { return getEnvVar('GEMINI_RATE_LIMIT_REQUESTS') },
+  get RATE_LIMIT_TOKENS_PER_MINUTE() { return getEnvVar('GEMINI_RATE_LIMIT_WINDOW') },
 } as const;
 
 // エージェントごとのシステムプロンプト

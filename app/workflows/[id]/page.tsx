@@ -1,16 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Spinner } from '@/components/ui/spinner'
-import { getWorkflowClient } from '@/lib/api/client'
-import { WorkflowResponse, AgentResponse } from '@/lib/api/types'
-import { formatDate, getStatusColor, getAgentTypeName, safeJsonParse } from '@/lib/utils'
-import { ArrowLeft, RefreshCw, ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, Play } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/app/components/ui/card'
+import { Badge } from '@/app/components/ui/badge'
+import { Button } from '@/app/components/ui/button'
+import { Spinner } from '@/app/components/ui/spinner'
+import { getWorkflowClient } from '@/app/lib/api/client'
+import { WorkflowResponse, AgentResponse, WorkflowStatus } from '@/app/lib/api/types'
+import { formatDate, getStatusColor, getAgentTypeName, safeJsonParse } from '@/app/lib/utils'
+import { createDashboardData } from '@/app/lib/utils/visualization'
+import { WorkflowDashboard } from '@/app/components/dashboard/workflow-dashboard'
+import { ArrowLeft, RefreshCw, ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, Play, BarChart3, List } from 'lucide-react'
 
 function AgentCard({ agent }: { agent: AgentResponse }) {
   const [expanded, setExpanded] = useState(false)
@@ -106,8 +108,9 @@ export default function WorkflowDetailPage() {
   const [workflow, setWorkflow] = useState<WorkflowResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [viewMode, setViewMode] = useState<'dashboard' | 'agents'>('dashboard')
   
-  const fetchWorkflow = async () => {
+  const fetchWorkflow = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
@@ -119,7 +122,7 @@ export default function WorkflowDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id])
   
   useEffect(() => {
     fetchWorkflow()
@@ -132,7 +135,7 @@ export default function WorkflowDetailPage() {
     }, 10000) // 10秒ごと
     
     return () => clearInterval(interval)
-  }, [params.id, workflow?.status])
+  }, [fetchWorkflow, workflow?.status])
   
   if (loading && !workflow) {
     return (
@@ -163,6 +166,15 @@ export default function WorkflowDetailPage() {
   const completedAgents = workflow.agents.filter(a => a.status === 'completed').length
   const totalAgents = workflow.agents.length
   const progress = totalAgents > 0 ? (completedAgents / totalAgents) * 100 : 0
+
+  // ダッシュボード用データの作成
+  const dashboardData = createDashboardData(
+    workflow.id,
+    workflow.name,
+    workflow.status as WorkflowStatus,
+    workflow.agents,
+    workflow.completedAt
+  )
   
   return (
     <div className="min-h-screen bg-background">
@@ -190,52 +202,81 @@ export default function WorkflowDetailPage() {
                 </div>
               </div>
             </div>
-            <Button onClick={fetchWorkflow} variant="outline">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              更新
-            </Button>
+            <div className="flex items-center space-x-3">
+              {/* ビューモード切り替え */}
+              <div className="flex bg-muted rounded-lg p-1">
+                <Button
+                  variant={viewMode === 'dashboard' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('dashboard')}
+                  className="flex items-center gap-2"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  ダッシュボード
+                </Button>
+                <Button
+                  variant={viewMode === 'agents' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('agents')}
+                  className="flex items-center gap-2"
+                >
+                  <List className="w-4 h-4" />
+                  エージェント詳細
+                </Button>
+              </div>
+              <Button onClick={fetchWorkflow} variant="outline">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                更新
+              </Button>
+            </div>
           </div>
         </div>
       </header>
       
       <main className="container mx-auto px-4 py-8">
-        <div className="space-y-6">
-          {/* 進捗表示 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>全体進捗</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">完了エージェント</span>
-                  <span className="font-medium">{completedAgents}/{totalAgents}</span>
+        {viewMode === 'dashboard' ? (
+          // ダッシュボードビュー
+          <WorkflowDashboard data={dashboardData} />
+        ) : (
+          // 従来のエージェント詳細ビュー
+          <div className="space-y-6">
+            {/* 進捗表示 */}
+            <Card>
+              <CardHeader>
+                <CardTitle>全体進捗</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">完了エージェント</span>
+                    <span className="font-medium">{completedAgents}/{totalAgents}</span>
+                  </div>
+                  <div className="w-full bg-secondary rounded-full h-3">
+                    <div 
+                      className="bg-primary h-3 rounded-full transition-all"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  {workflow.completedAt && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      完了日時: {formatDate(workflow.completedAt)}
+                    </p>
+                  )}
                 </div>
-                <div className="w-full bg-secondary rounded-full h-3">
-                  <div 
-                    className="bg-primary h-3 rounded-full transition-all"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                {workflow.completedAt && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    完了日時: {formatDate(workflow.completedAt)}
-                  </p>
-                )}
+              </CardContent>
+            </Card>
+            
+            {/* エージェント一覧 */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">エージェント実行状況</h2>
+              <div className="space-y-3">
+                {workflow.agents.map((agent) => (
+                  <AgentCard key={agent.id} agent={agent} />
+                ))}
               </div>
-            </CardContent>
-          </Card>
-          
-          {/* エージェント一覧 */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4">エージェント実行状況</h2>
-            <div className="space-y-3">
-              {workflow.agents.map((agent) => (
-                <AgentCard key={agent.id} agent={agent} />
-              ))}
             </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )

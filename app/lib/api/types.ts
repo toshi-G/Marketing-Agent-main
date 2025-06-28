@@ -297,6 +297,113 @@ export interface OptimizationArchiveOutput {
   };
 }
 
+// 可視化用のデータ構造
+export interface VisualizationData {
+  marketResearch?: {
+    genres: Array<{
+      name: string;
+      trendScore: number;
+      profitabilityScore: number;
+      competitionLevel: string;
+      marketSize: string;
+    }>;
+    summary: string;
+  };
+  contentAnalysis?: {
+    platformStats: Array<{
+      platform: string;
+      count: number;
+      avgEngagement: number;
+    }>;
+    emotionDistribution: Array<{
+      emotion: string;
+      count: number;
+      percentage: number;
+    }>;
+    structurePatterns: Array<{
+      pattern: string;
+      successRate: number;
+      usage: number;
+    }>;
+  };
+  templateOptimization?: {
+    templates: Array<{
+      id: string;
+      name: string;
+      successRate: number;
+      engagementRate: number;
+      conversionRate: number;
+    }>;
+    comparison: Array<{
+      metric: string;
+      template1: number;
+      template2: number;
+      template3: number;
+    }>;
+  };
+  businessStrategy?: {
+    productLineup: Array<{
+      name: string;
+      price: number;
+      profitMargin: number;
+    }>;
+    roiProjection: {
+      monthlyTargetLeads: number;
+      conversionRates: Array<{
+        stage: string;
+        rate: number;
+      }>;
+      revenueBreakdown: Array<{
+        category: string;
+        amount: number;
+      }>;
+    };
+  };
+  contentCreation?: {
+    contentTypes: Array<{
+      type: string;
+      count: number;
+      avgLength: number;
+    }>;
+    platformDistribution: Array<{
+      platform: string;
+      posts: number;
+    }>;
+  };
+  copyGeneration?: {
+    hookCategories: Array<{
+      category: string;
+      count: number;
+      avgCtr: number;
+    }>;
+    performance: Array<{
+      category: string;
+      expectedCtr: number;
+      actualCtr?: number;
+    }>;
+  };
+}
+
+// ダッシュボード用の統合データ
+export interface DashboardData {
+  workflowId: string;
+  workflowName: string;
+  status: WorkflowStatus;
+  completedAt?: string;
+  visualization: VisualizationData;
+  summary: {
+    totalAgents: number;
+    completedAgents: number;
+    processingTime: number;
+    successRate: number;
+  };
+  exportData: {
+    templates: any[];
+    content: any[];
+    analytics: any[];
+  };
+}
+
 // API リクエスト/レスポンス型
 export interface StartWorkflowRequest {
   name: string;
