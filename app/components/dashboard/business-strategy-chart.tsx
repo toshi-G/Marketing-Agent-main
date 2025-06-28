@@ -212,14 +212,7 @@ export function BusinessStrategyChart({ data }: BusinessStrategyChartProps) {
                   <Legend />
                   <Bar 
                     dataKey="amount" 
-                    fill={(entry: any) => {
-                      if (entry && entry.category) {
-                        if (entry.category === 'Revenue') return '#10B981';
-                        if (entry.category === 'Net Profit') return '#3B82F6';
-                        return '#EF4444';
-                      }
-                      return '#6B7280';
-                    }}
+                    fill="#3B82F6"
                     name="金額"
                   >
                     {data.roiProjection.revenueBreakdown.map((entry, index) => (

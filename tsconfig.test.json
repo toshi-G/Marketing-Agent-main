@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "outDir": "dist-test",
+    "rootDir": ".",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "app/lib/**/*.ts",
+    "test-agents-core.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-tests",
+    ".next"
+  ]
+}

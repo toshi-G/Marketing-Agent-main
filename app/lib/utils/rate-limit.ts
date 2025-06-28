@@ -60,7 +60,7 @@ export function rateLimit(request: NextRequest): NextResponse | null {
 // 定期的にメモリをクリーンアップ
 setInterval(() => {
   const now = Date.now();
-  for (const [ip, data] of requestCounts.entries()) {
+  for (const [ip, data] of Array.from(requestCounts.entries())) {
     if (now > data.resetTime + 60000) { // 1分以上古いエントリを削除
       requestCounts.delete(ip);
     }

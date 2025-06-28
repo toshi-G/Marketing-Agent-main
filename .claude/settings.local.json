@@ -5,7 +5,24 @@
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(ls:*)",
+      "Bash(npm run prisma:generate:*)",
+      "Bash(npm run lint:*)",
+      "Bash(timeout 10s npm run dev:*)",
+      "Bash(npx next:*)",
+      "Bash(node:*)",
+      "Bash(npm --version)",
+      "Bash(export NODE_OPTIONS=\"--max-old-space-size=2048\")",
+      "Bash(curl:*)",
+      "Bash(npm run dev:*)",
+      "Bash(ss:*)",
+      "Bash(timeout:*)",
+      "Bash(pkill:*)",
+      "Bash(npx prisma:*)",
+      "Bash(chmod:*)",
+      "Bash(npm ls:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

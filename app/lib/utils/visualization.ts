@@ -287,7 +287,7 @@ export function createDashboardData(
   
   // 処理時間の計算（最初のエージェント開始から最後のエージェント完了まで）
   const startTimes = agents.map(agent => new Date(agent.createdAt).getTime()).filter(Boolean);
-  const endTimes = agents.map(agent => agent.completedAt ? new Date(agent.completedAt).getTime() : null).filter(Boolean);
+  const endTimes = agents.map(agent => agent.completedAt ? new Date(agent.completedAt).getTime() : null).filter((time): time is number => time !== null);
   const processingTime = endTimes.length > 0 && startTimes.length > 0 
     ? Math.max(...endTimes) - Math.min(...startTimes) 
     : 0;
