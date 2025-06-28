@@ -10,7 +10,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { getWorkflowClient } from '@/lib/api/client'
 import { WorkflowResponse, AgentResponse } from '@/lib/api/types'
 import { formatDate, getStatusColor, getAgentTypeName, safeJsonParse } from '@/lib/utils'
-import { ArrowLeft, RefreshCw, ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, Play } from 'lucide-react'
+import { ArrowLeft, RefreshCw, Trash, ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, Play } from 'lucide-react'
+import { useDeleteWorkflow } from '@/hooks/use-workflows'
 
 function AgentCard({ agent }: { agent: AgentResponse }) {
   const [expanded, setExpanded] = useState(false)
@@ -106,6 +107,7 @@ export default function WorkflowDetailPage() {
   const [workflow, setWorkflow] = useState<WorkflowResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const { deleteWorkflow, loading: deleting } = useDeleteWorkflow()
   
   const fetchWorkflow = async () => {
     try {
@@ -118,6 +120,17 @@ export default function WorkflowDetailPage() {
       setError(err instanceof Error ? err.message : 'エラーが発生しました')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('このワークフローを削除しますか？')) return
+
+    try {
+      await deleteWorkflow(params.id as string)
+      router.push('/')
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '削除に失敗しました')
     }
   }
   
@@ -190,10 +203,20 @@ export default function WorkflowDetailPage() {
                 </div>
               </div>
             </div>
-            <Button onClick={fetchWorkflow} variant="outline">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              更新
-            </Button>
+            <div className="flex space-x-2">
+              <Button onClick={fetchWorkflow} variant="outline">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                更新
+              </Button>
+              <Button onClick={handleDelete} variant="destructive" disabled={deleting}>
+                {deleting ? (
+                  <Spinner size="sm" className="mr-2" />
+                ) : (
+                  <Trash className="w-4 h-4 mr-2" />
+                )}
+                削除
+              </Button>
+            </div>
           </div>
         </div>
       </header>

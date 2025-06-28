@@ -316,6 +316,10 @@ export interface WorkflowResponse {
   agents: AgentResponse[];
 }
 
+export interface DeleteWorkflowResponse {
+  success: boolean;
+}
+
 export interface AgentResponse {
   id: string;
   type: AgentType;

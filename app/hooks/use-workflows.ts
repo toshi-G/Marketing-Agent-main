@@ -90,3 +90,25 @@ export function useCreateWorkflow() {
   
   return { createWorkflow, loading, error };
 }
+
+export function useDeleteWorkflow() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const deleteWorkflow = async (id: string) => {
+    try {
+      setLoading(true);
+      setError('');
+      const client = getWorkflowClient();
+      await client.deleteWorkflow(id);
+    } catch (err) {
+      const message = getErrorMessage(err);
+      setError(message);
+      throw new Error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { deleteWorkflow, loading, error };
+}

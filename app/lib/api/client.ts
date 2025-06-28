@@ -167,6 +167,28 @@ export class WorkflowClient {
       throw new APIError(`Failed to list workflows: ${error}`);
     }
   }
+
+  async deleteWorkflow(workflowId: string) {
+    try {
+      const response = await fetch(`${this.baseUrl}/workflows/${workflowId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new APIError(
+          `Failed to delete workflow: ${response.statusText}`,
+          response.status,
+          errorData
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError(`Failed to delete workflow: ${error}`);
+    }
+  }
 }
 
 // シングルトンインスタンス
