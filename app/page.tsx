@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CreateWorkflowModal } from '@/components/create-workflow-modal'
 import { WorkflowList } from '@/components/workflow-list'
+import WorkflowReviewWidget from '@/components/workflow-review-widget'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Plus, Zap, TrendingUp, Target, Brain, FileText, Megaphone, Archive } from 'lucide-react'
@@ -103,11 +104,26 @@ export default function HomePage() {
             </div>
           </section>
           
-          {/* ワークフロー一覧 */}
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">ワークフロー一覧</h2>
-            <WorkflowList key={refreshKey} />
-          </section>
+          {/* 承認待ち & ワークフロー一覧 */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <section>
+                <h2 className="text-2xl font-semibold mb-4">ワークフロー一覧</h2>
+                <WorkflowList key={refreshKey} />
+              </section>
+            </div>
+            
+            <div className="lg:col-span-1">
+              <section>
+                <h2 className="text-2xl font-semibold mb-4">承認待ち</h2>
+                <WorkflowReviewWidget 
+                  onNavigateToReview={(workflowId) => {
+                    window.location.href = `/workflows/${workflowId}/review`;
+                  }}
+                />
+              </section>
+            </div>
+          </div>
         </div>
       </main>
       

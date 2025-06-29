@@ -11,11 +11,18 @@ model Workflow {
   id          String           @id @default(uuid())
   name        String
   status      String           @default("pending")
+  metadata    String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   completedAt DateTime?
   agents      Agent[]
   results     WorkflowResult[]
+
+  // インデックス最適化
+  @@index([status])
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([completedAt])
 }
 
 model Agent {
@@ -26,19 +33,38 @@ model Agent {
   input       String?
   output      String?
   error       String?
+  metadata    String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   completedAt DateTime?
   workflow    Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // インデックス最適化
+  @@index([workflowId])
+  @@index([status])
+  @@index([type])
+  @@index([workflowId, status])
+  @@index([workflowId, type])
+  @@index([status, createdAt])
+  @@index([completedAt])
 }
 
 model WorkflowResult {
   id         String   @id @default(uuid())
   workflowId String
-  type       String
-  data       String
+  status     String   @default("pending")
+  results    String?
+  metadata   String?
+  insights   String?
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // インデックス最適化
+  @@index([workflowId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([workflowId, status])
 }
 
 model Template {
@@ -49,8 +75,20 @@ model Template {
   content     String
   performance String?
   tags        String?
+  isFavorite  Boolean  @default(false)
+  usageCount  Int      @default(0)
+  lastUsedAt  DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // インデックス最適化
+  @@index([category])
+  @@index([type])
+  @@index([isFavorite])
+  @@index([category, type])
+  @@index([usageCount])
+  @@index([createdAt])
+  @@index([lastUsedAt])
 }
 
 model MarketData {
@@ -63,6 +101,13 @@ model MarketData {
   data          String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  // インデックス最適化
+  @@index([genre])
+  @@index([trendScore])
+  @@index([profitability])
+  @@index([createdAt])
+  @@index([genre, trendScore])
 }
 
 model Content {
@@ -75,4 +120,10 @@ model Content {
   tags        String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // インデックス最適化
+  @@index([type])
+  @@index([platform])
+  @@index([createdAt])
+  @@index([type, platform])
 }

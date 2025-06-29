@@ -1,30 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/app/lib/utils/db';
-import { z } from 'zod';
-import { createApiLogger } from '@/app/lib/utils/logger';
+import prisma from '@/lib/utils/db';
+import { getErrorMessage } from '@/lib/utils';
 
-const logger = createApiLogger('/api/templates/[id]');
-
-// テンプレート更新用スキーマ
-const updateTemplateSchema = z.object({
-  name: z.string().min(1, 'テンプレート名は必須です').optional(),
-  category: z.string().min(1, 'カテゴリは必須です').optional(),
-  type: z.string().min(1, 'タイプは必須です').optional(),
-  content: z.object({}).passthrough().optional(),
-  performance: z.object({}).passthrough().optional(),
-  tags: z.array(z.string()).optional()
-});
-
+// GET /api/templates/[id] - テンプレート詳細取得
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
-    logger.info('Template detail request received', { templateId: id });
+    const templateId = params.id;
 
     const template = await prisma.template.findUnique({
-      where: { id }
+      where: { id: templateId }
     });
 
     if (!template) {
@@ -34,52 +21,72 @@ export async function GET(
       );
     }
 
-    // JSONパース
-    const formattedTemplate = {
-      ...template,
-      content: typeof template.content === 'string' 
-        ? JSON.parse(template.content) 
-        : template.content,
-      performance: template.performance 
-        ? (typeof template.performance === 'string' 
-           ? JSON.parse(template.performance) 
-           : template.performance)
-        : null,
-      tags: template.tags 
-        ? (typeof template.tags === 'string' 
-           ? JSON.parse(template.tags) 
-           : template.tags)
-        : []
-    };
+    // データを整形
+    let content = {};
+    let performance = {};
+    let tags: string[] = [];
 
-    logger.info('Template retrieved successfully', { templateId: id });
+    try {
+      content = template.content ? JSON.parse(template.content) : {};
+    } catch (error) {
+      content = { raw: template.content };
+    }
+
+    try {
+      performance = template.performance ? JSON.parse(template.performance) : {};
+    } catch (error) {
+      performance = {};
+    }
+
+    try {
+      tags = template.tags ? template.tags.split(',').filter(Boolean) : [];
+    } catch (error) {
+      tags = [];
+    }
+
+    const formattedTemplate = {
+      id: template.id,
+      name: template.name,
+      description: template.description,
+      category: template.category,
+      content,
+      performance,
+      tags,
+      isPublic: template.isPublic,
+      isFavorite: template.isFavorite,
+      createdAt: template.createdAt,
+      updatedAt: template.updatedAt,
+      createdBy: template.createdBy,
+      metadata: {
+        industry: template.industry,
+        targetAudience: template.targetAudience,
+        platform: template.platform
+      }
+    };
 
     return NextResponse.json(formattedTemplate);
 
   } catch (error) {
-    logger.error('Failed to retrieve template', { error });
-    
+    console.error('Template detail error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: getErrorMessage(error) },
       { status: 500 }
     );
   }
 }
 
+// PUT /api/templates/[id] - テンプレート更新
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
-    logger.info('Template update request received', { templateId: id });
-
+    const templateId = params.id;
     const body = await request.json();
-    const data = updateTemplateSchema.parse(body);
 
     // テンプレートの存在確認
     const existingTemplate = await prisma.template.findUnique({
-      where: { id }
+      where: { id: templateId }
     });
 
     if (!existingTemplate) {
@@ -90,61 +97,51 @@ export async function PUT(
     }
 
     // 更新データの準備
-    const updateData: any = {};
-    
-    if (data.name) updateData.name = data.name;
-    if (data.category) updateData.category = data.category;
-    if (data.type) updateData.type = data.type;
-    if (data.content) updateData.content = JSON.stringify(data.content);
-    if (data.performance) updateData.performance = JSON.stringify(data.performance);
-    if (data.tags) updateData.tags = JSON.stringify(data.tags);
+    const updateData: any = {
+      updatedAt: new Date()
+    };
+
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.description !== undefined) updateData.description = body.description;
+    if (body.category !== undefined) updateData.category = body.category;
+    if (body.content !== undefined) updateData.content = JSON.stringify(body.content);
+    if (body.tags !== undefined) updateData.tags = Array.isArray(body.tags) ? body.tags.join(',') : body.tags;
+    if (body.isPublic !== undefined) updateData.isPublic = body.isPublic;
+    if (body.metadata?.industry !== undefined) updateData.industry = body.metadata.industry;
+    if (body.metadata?.targetAudience !== undefined) updateData.targetAudience = body.metadata.targetAudience;
+    if (body.metadata?.platform !== undefined) updateData.platform = body.metadata.platform;
 
     // テンプレート更新
     const updatedTemplate = await prisma.template.update({
-      where: { id },
+      where: { id: templateId },
       data: updateData
     });
 
-    // レスポンス用にパース
-    const formattedTemplate = {
-      ...updatedTemplate,
-      content: JSON.parse(updatedTemplate.content),
-      performance: updatedTemplate.performance ? JSON.parse(updatedTemplate.performance) : null,
-      tags: updatedTemplate.tags ? JSON.parse(updatedTemplate.tags) : []
-    };
-
-    logger.info('Template updated successfully', { templateId: id });
-
-    return NextResponse.json(formattedTemplate);
+    return NextResponse.json({
+      id: updatedTemplate.id,
+      message: 'Template updated successfully'
+    });
 
   } catch (error) {
-    logger.error('Failed to update template', { error });
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid template data', details: error.errors },
-        { status: 400 }
-      );
-    }
-
+    console.error('Template update error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: getErrorMessage(error) },
       { status: 500 }
     );
   }
 }
 
+// DELETE /api/templates/[id] - テンプレート削除
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
-    logger.info('Template deletion request received', { templateId: id });
+    const templateId = params.id;
 
     // テンプレートの存在確認
     const existingTemplate = await prisma.template.findUnique({
-      where: { id }
+      where: { id: templateId }
     });
 
     if (!existingTemplate) {
@@ -156,18 +153,17 @@ export async function DELETE(
 
     // テンプレート削除
     await prisma.template.delete({
-      where: { id }
+      where: { id: templateId }
     });
 
-    logger.info('Template deleted successfully', { templateId: id });
-
-    return NextResponse.json({ message: 'Template deleted successfully' });
+    return NextResponse.json({ 
+      message: 'Template deleted successfully' 
+    });
 
   } catch (error) {
-    logger.error('Failed to delete template', { error });
-    
+    console.error('Template deletion error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: getErrorMessage(error) },
       { status: 500 }
     );
   }
