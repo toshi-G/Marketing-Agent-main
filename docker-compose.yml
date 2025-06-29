@@ -1,16 +1,54 @@
 version: '3.8'
 
 services:
+  # 開発環境用
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=file:./prisma/dev.db
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    restart: unless-stopped
+    command: npm run dev
+
+  # 本番環境用
   app:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - NODE_ENV=production
       - DATABASE_URL=file:./prisma/dev.db
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
-      - ./prisma:/app/prisma
+      - ./prisma:/app/prisma:rw
     restart: unless-stopped
+    depends_on:
+      - db-setup
+
+  # データベース初期化用サービス
+  db-setup:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      - DATABASE_URL=file:./prisma/dev.db
+    volumes:
+      - ./prisma:/app/prisma:rw
+    command: >
+      sh -c "
+        npx prisma generate &&
+        npx prisma db push --accept-data-loss &&
+        echo 'Database setup completed'
+      "
+    restart: "no"

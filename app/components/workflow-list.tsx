@@ -111,12 +111,19 @@ export function WorkflowList() {
                   </div>
                 )}
                 
-                <Link href={`/workflows/${workflow.id}`}>
-                  <Button className="w-full" variant="outline">
-                    詳細を見る
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
+                <div className="flex gap-2">
+                  <Link href={`/workflows/${workflow.id}/results`} className="flex-1">
+                    <Button className="w-full" variant="default" size="sm">
+                      結果表示
+                    </Button>
+                  </Link>
+                  <Link href={`/workflows/${workflow.id}`} className="flex-1">
+                    <Button className="w-full" variant="outline" size="sm">
+                      詳細
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </CardContent>
           </Card>

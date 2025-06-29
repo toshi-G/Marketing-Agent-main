@@ -22,7 +22,13 @@
       "Bash(npx prisma:*)",
       "Bash(chmod:*)",
       "Bash(npm ls:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(true)",
+      "Bash(export NODE_OPTIONS=\"--max-old-space-size=4096\")",
+      "Bash(docker:*)",
+      "Bash(docker-compose:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm test:*)"
     ],
     "deny": []
   }

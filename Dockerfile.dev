@@ -1,0 +1,29 @@
+# Marketing Agent - Development Dockerfile
+FROM node:18-alpine
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# システム依存関係をインストール
+RUN apk add --no-cache \
+    libc6-compat \
+    bash \
+    && rm -rf /var/cache/apk/*
+
+# package.jsonとpackage-lock.jsonをコピー
+COPY package*.json ./
+
+# 依存関係をインストール (開発依存関係も含む)
+RUN npm ci
+
+# アプリケーションコードをコピー
+COPY . .
+
+# Prismaクライアントを生成
+RUN npx prisma generate
+
+# ポート3000を公開
+EXPOSE 3000
+
+# 開発サーバーを起動 (デフォルトコマンド)
+CMD ["npm", "run", "dev"]

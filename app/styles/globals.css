@@ -114,12 +114,32 @@
   }
 }
 
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
   }
   50% {
     opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -131,6 +151,159 @@
   animation: slideIn 0.3s ease-out;
 }
 
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-out;
+}
+
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* レスポンシブデザイン用ユーティリティ */
+@layer utilities {
+  /* モバイルファースト - コンテナレスポンシブ */
+  .container-responsive {
+    @apply w-full mx-auto px-4;
+    @apply sm:px-6 lg:px-8;
+    @apply max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl;
+  }
+
+  /* グリッドレスポンシブ */
+  .grid-responsive {
+    @apply grid gap-4;
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+
+  .grid-responsive-2 {
+    @apply grid gap-4;
+    @apply grid-cols-1 md:grid-cols-2;
+  }
+
+  .grid-responsive-3 {
+    @apply grid gap-4;
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  /* テキストレスポンシブ */
+  .text-responsive-xl {
+    @apply text-lg sm:text-xl md:text-2xl lg:text-3xl;
+  }
+
+  .text-responsive-lg {
+    @apply text-base sm:text-lg md:text-xl lg:text-2xl;
+  }
+
+  .text-responsive-base {
+    @apply text-sm sm:text-base md:text-lg;
+  }
+
+  /* パディング・マージンレスポンシブ */
+  .p-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+
+  .py-responsive {
+    @apply py-4 sm:py-6 lg:py-8;
+  }
+
+  .px-responsive {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .m-responsive {
+    @apply m-4 sm:m-6 lg:m-8;
+  }
+
+  /* カードレスポンシブ */
+  .card-responsive {
+    @apply w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl;
+  }
+
+  /* ボタンレスポンシブ */
+  .btn-responsive {
+    @apply px-4 py-2 text-sm;
+    @apply sm:px-6 sm:py-3 sm:text-base;
+  }
+
+  /* フレックスボックスレスポンシブ */
+  .flex-responsive {
+    @apply flex flex-col space-y-4;
+    @apply sm:flex-row sm:space-y-0 sm:space-x-4;
+  }
+
+  .flex-responsive-reverse {
+    @apply flex flex-col-reverse space-y-reverse space-y-4;
+    @apply sm:flex-row sm:space-y-0 sm:space-x-4;
+  }
+
+  /* 高さレスポンシブ */
+  .h-screen-mobile {
+    height: calc(100vh - 4rem); /* モバイルでアドレスバー分を考慮 */
+    @apply sm:h-screen;
+  }
+
+  /* ホバー効果（タッチデバイスでは無効） */
+  .hover-effect {
+    @apply transition-all duration-200;
+    @apply hover:shadow-md hover:scale-105;
+  }
+
+  @media (hover: none) {
+    .hover-effect:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  /* フォーカス表示の改善 */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+
+  /* タッチターゲットサイズの確保 */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* スクロール可能エリア */
+  .scroll-area {
+    @apply overflow-auto;
+    -webkit-overflow-scrolling: touch; /* iOS用スムーススクロール */
+  }
+
+  /* セーフエリア対応 */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-area-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* プリント用スタイル */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    @apply text-black bg-white;
+  }
+
+  .container {
+    @apply max-w-none px-0;
+  }
 }
