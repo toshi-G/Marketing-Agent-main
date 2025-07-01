@@ -29,7 +29,10 @@
       "Bash(docker-compose:*)",
       "Bash(mkdir:*)",
       "Bash(npm test:*)",
-      "Bash(npm run prisma:migrate:*)"
+      "Bash(npm run prisma:migrate:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

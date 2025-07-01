@@ -75,8 +75,8 @@ export function PerformanceChart({ data, timeRange, className = '' }: Performanc
     return Math.round(seconds / 60);
   };
 
-  // カスタムツールチップ
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  // カスタムツールチップをuseCallbackでメモ化
+  const CustomTooltip = React.useCallback(({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border rounded-lg shadow-lg">
@@ -96,7 +96,7 @@ export function PerformanceChart({ data, timeRange, className = '' }: Performanc
       );
     }
     return null;
-  };
+  }, [timeRange]);
 
   return (
     <Card className={className}>

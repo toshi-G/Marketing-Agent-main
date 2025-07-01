@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './styles/globals.css'
-import { ErrorBoundary } from '@/components/error-boundary'
-import { NotificationProvider } from '@/components/notification-system'
+import { ClientLayout } from '@/components/client-layout'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,16 +18,9 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={inter.className}>
-        <ErrorBoundary
-          onError={(error, errorInfo) => {
-            // エラー情報をロギングサービスに送信
-            console.error('Application Error:', error, errorInfo);
-          }}
-        >
-          <NotificationProvider maxNotifications={3}>
-            {children}
-          </NotificationProvider>
-        </ErrorBoundary>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   )

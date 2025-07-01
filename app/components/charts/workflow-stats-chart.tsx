@@ -51,8 +51,8 @@ export function WorkflowStatsChart({ data, chartType = 'area', className = '' }:
     return date.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
   };
 
-  // カスタムツールチップ
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  // カスタムツールチップをuseCallbackでメモ化
+  const CustomTooltip = React.useCallback(({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border rounded-lg shadow-lg">
@@ -69,7 +69,7 @@ export function WorkflowStatsChart({ data, chartType = 'area', className = '' }:
       );
     }
     return null;
-  };
+  }, []);
 
   // 統計情報の計算
   const totalWorkflows = data.reduce((sum, d) => sum + d.total, 0);

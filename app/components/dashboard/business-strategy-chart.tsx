@@ -30,7 +30,7 @@ export function BusinessStrategyChart({ data }: BusinessStrategyChartProps) {
     }).format(value);
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = React.useCallback(({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
@@ -50,7 +50,7 @@ export function BusinessStrategyChart({ data }: BusinessStrategyChartProps) {
       );
     }
     return null;
-  };
+  }, []);
 
   return (
     <div className="space-y-6">

@@ -62,8 +62,8 @@ export function TemplateChart({ data, chartType = 'bar', className = '' }: Templ
   // 円グラフの色設定
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-  // カスタムツールチップ（棒グラフ用）
-  const BarTooltip = ({ active, payload, label }: any) => {
+  // カスタムツールチップ（棒グラフ用）をuseCallbackでメモ化
+  const BarTooltip = React.useCallback(({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0]?.payload;
       return (
@@ -81,10 +81,10 @@ export function TemplateChart({ data, chartType = 'bar', className = '' }: Templ
       );
     }
     return null;
-  };
+  }, []);
 
-  // カスタムツールチップ（円グラフ用）
-  const PieTooltip = ({ active, payload }: any) => {
+  // カスタムツールチップ（円グラフ用）をuseCallbackでメモ化
+  const PieTooltip = React.useCallback(({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0]?.payload;
       return (
@@ -102,7 +102,7 @@ export function TemplateChart({ data, chartType = 'bar', className = '' }: Templ
       );
     }
     return null;
-  };
+  }, []);
 
   // 統計情報の計算
   const totalUsage = data.reduce((sum, template) => sum + template.usage, 0);

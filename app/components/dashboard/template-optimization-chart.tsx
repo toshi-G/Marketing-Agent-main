@@ -20,7 +20,7 @@ export function TemplateOptimizationChart({ data }: TemplateOptimizationChartPro
     );
   }
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = React.useCallback(({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
@@ -34,7 +34,7 @@ export function TemplateOptimizationChart({ data }: TemplateOptimizationChartPro
       );
     }
     return null;
-  };
+  }, []);
 
   // テンプレートの表示用データ変換
   const templateData = data.templates.map(template => ({

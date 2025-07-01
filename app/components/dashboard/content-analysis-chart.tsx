@@ -22,7 +22,7 @@ export function ContentAnalysisChart({ data }: ContentAnalysisChartProps) {
 
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = React.useCallback(({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
@@ -37,7 +37,7 @@ export function ContentAnalysisChart({ data }: ContentAnalysisChartProps) {
       );
     }
     return null;
-  };
+  }, []);
 
   return (
     <div className="space-y-6">

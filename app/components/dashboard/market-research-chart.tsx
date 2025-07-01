@@ -38,7 +38,7 @@ export function MarketResearchChart({ data }: MarketResearchChartProps) {
     競合度: genre.competitionLevel === 'low' ? 90 : genre.competitionLevel === 'medium' ? 60 : 30
   }));
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = React.useCallback(({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -54,7 +54,7 @@ export function MarketResearchChart({ data }: MarketResearchChartProps) {
       );
     }
     return null;
-  };
+  }, []);
 
   return (
     <div className="space-y-6">
